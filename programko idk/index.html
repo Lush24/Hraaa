@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAZE GAME</title>
+    <style>
+
+        body, html {
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+        }
+        #menu {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            background: red;
+            color: white;
+            border-radius: 10px;
+        }
+        button:hover {
+            background: darkred;
+        }
+        .bottom-left {
+          position: absolute;
+          left: 10px;  
+          bottom: 10px; 
+          margin: 0;  
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="bottom-left">
+        Player 1 = šipky <br>
+        Player 2 = WSAD <br>
+        Player 3 = IKJL
+      </h1>
+      
+
+    <div id="menu">
+        <h1>Welcome to the Maze Game</h1>
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="settings()">Settings</button>
+    </div>
+
+    <canvas id="gameCanvas" style="display: none;"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
