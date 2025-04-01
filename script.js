@@ -1,40 +1,83 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-document.body.style.overflow = "hidden"; // Prevent scrolling
+const gridSize = 40; // Matches the size of the balls (2 * radius)
+const moveCooldown = 5; // Frames to wait before allowing another move
 
-// Ball objects
-let ball1 = { x: 100, y: 100, radius: 20, speed: 5, color: "red" };
-let ball2 = { x: 200, y: 200, radius: 20, speed: 5, color: "blue" };
-let ball3 = { x: 300, y: 300, radius: 20, speed: 5, color: "yellow" };
+// Ball objects with cooldown counters
+let ball1 = { x: 100, y: 100, radius: 20, color: "red", moveCounter: 0 };
+let ball2 = { x: 200, y: 200, radius: 20, color: "blue", moveCounter: 0 };
+let ball3 = { x: 300, y: 300, radius: 20, color: "yellow", moveCounter: 0 };
 
-let keys = {}; // Trackuje co mačkám
+let keys = {}; // Track pressed keys
 
 document.addEventListener("keydown", (event) => { keys[event.key] = true; });
 document.addEventListener("keyup", (event) => { keys[event.key] = false; });
 
+/* --- Game Initialization --- */
+function init() {
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    document.body.style.overflow = "hidden"; // Prevent scrolling
+    gameLoop();
+}
+
+/* --- Canvas Resizing --- */
+function resizeCanvas() {
+    canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
+    canvas.height = Math.floor(window.innerHeight / gridSize) * gridSize;
+}
+
+/* --- Grid Drawing --- */
+function drawGrid() {
+    ctx.strokeStyle = "#ccc";
+    for (let x = 0; x < canvas.width; x += gridSize) {
+        for (let y = 0; y < canvas.height; y += gridSize) {
+            ctx.strokeRect(x, y, gridSize, gridSize);
+        }
+    }
+}
+
+/* --- Ball Movement --- */
+function snapToGrid(value) {
+    return Math.round(value / gridSize) * gridSize;
+}
+
+function moveBall(ball, keyUp, keyDown, keyLeft, keyRight) {
+    if (ball.moveCounter === 0) {
+        let newX = ball.x;
+        let newY = ball.y;
+
+        if (keys[keyUp] && ball.y - gridSize >= 0) newY -= gridSize;
+        if (keys[keyDown] && ball.y + gridSize < canvas.height - gridSize) newY += gridSize;
+        if (keys[keyLeft] && ball.x - gridSize >= 0) newX -= gridSize;
+        if (keys[keyRight] && ball.x + gridSize < canvas.width - gridSize) newX += gridSize;
+
+        ball.x = snapToGrid(newX);
+        ball.y = snapToGrid(newY);
+
+        ball.moveCounter = moveCooldown; // Reset the cooldown counter for this ball
+    }
+}
+
+/* --- Decrease Cooldowns for Each Ball --- */
+function updateCooldowns() {
+    if (ball1.moveCounter > 0) ball1.moveCounter--;
+    if (ball2.moveCounter > 0) ball2.moveCounter--;
+    if (ball3.moveCounter > 0) ball3.moveCounter--;
+}
+
+/* --- Game Loop --- */
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid(); // Draw the grid
 
-    if (keys["ArrowUp"] && ball1.y - ball1.radius > 0) ball1.y -= ball1.speed;
-    if (keys["ArrowDown"] && ball1.y + ball1.radius < canvas.height) ball1.y += ball1.speed;
-    if (keys["ArrowLeft"] && ball1.x - ball1.radius > 0) ball1.x -= ball1.speed;
-    if (keys["ArrowRight"] && ball1.x + ball1.radius < canvas.width) ball1.x += ball1.speed;
+    updateCooldowns(); // Update cooldowns
 
-    if (keys["w"] && ball2.y - ball2.radius > 0) ball2.y -= ball2.speed;
-    if (keys["s"] && ball2.y + ball2.radius < canvas.height) ball2.y += ball2.speed;
-    if (keys["a"] && ball2.x - ball2.radius > 0) ball2.x -= ball2.speed;
-    if (keys["d"] && ball2.x + ball2.radius < canvas.width) ball2.x += ball2.speed;
-   
-    if (keys["i"] && ball3.y - ball3.radius > 0) ball3.y -= ball3.speed;
-    if (keys["k"] && ball3.y + ball3.radius < canvas.height) ball3.y += ball3.speed;
-    if (keys["j"] && ball3.x - ball3.radius > 0) ball3.x -= ball3.speed;
-    if (keys["l"] && ball3.x + ball3.radius < canvas.width) ball3.x += ball3.speed;
+    // Handle movement for each ball
+    moveBall(ball1, "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight");
+    moveBall(ball2, "w", "s", "a", "d");
+    moveBall(ball3, "i", "k", "j", "l");
 
     drawBall(ball1);
     drawBall(ball2);
@@ -43,18 +86,18 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+/* --- Draw Ball Function --- */
 function drawBall(ball) {
     ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.arc(ball.x + ball.radius, ball.y + ball.radius, ball.radius, 0, Math.PI * 2);
     ctx.fillStyle = ball.color;
     ctx.fill();
     ctx.closePath();
 }
 
-// 🎮 Start Game Function
+/* --- Start the Game --- */
 function startGame() {
-    document.getElementById("menu").style.display = "none"; // Hide menu
-    canvas.style.display = "block"; // Show game
-    resizeCanvas();
-    gameLoop();
+    document.getElementById("menu").style.display = "none";
+    canvas.style.display = "block"; 
+    init();
 }
